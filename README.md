@@ -2,12 +2,16 @@
 
 ![Screenshot](screenshot.png)
 
-This is an extremely simply, non-configurable, watch face for the
-Garmin Vivoactive3. It may work on other Garmin products with round faces,
-but this hasn't been tested.
+This is an extremely simple, non-configurable, watch face for the
+Garmin Vivoactive 3. It may work on other Garmin products with round faces,
+but this hasn't been tested [edited to add: it works fine with the
+Vivoactive 4 as well. However, this device, and others with large
+storage capacity, use MTP rather than USB mass storage to transfer
+files. This doesn't affect the use of this watch face, but it might
+potentially affect how you transfer the .prg file to the watch].
 
 The sole purpose of this application is to present an Analog watch
-face with the minimum amount of power consumption, to extent battery life.
+face with the minimum amount of power consumption, to extend battery life.
 To that end there is no seconds hand, no dynamically-generated
 fitness information, nothing except time and date. I've been very
 careful to ensure that the amount of math required to draw the face
