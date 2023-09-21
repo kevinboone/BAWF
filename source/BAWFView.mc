@@ -1,6 +1,6 @@
 /*============================================================================
   Battery-saving Analog Watch Face
-  Copyright (c)2018 Kevin Boone
+  Copyright (c)2018-2023 Kevin Boone
   Released under the terms of the GNU Public Licence, v3.0
 ============================================================================*/
 using Toybox.Graphics;
@@ -11,7 +11,6 @@ using Toybox.Time;
 using Toybox.Time.Gregorian;
 using Toybox.WatchUi;
 using Toybox.Application;
-
 
 /** Main class for the battery-saving watch face. */
 class BAWFView extends WatchUi.WatchFace
@@ -24,12 +23,29 @@ class BAWFView extends WatchUi.WatchFace
   var halfWidth;
   var halfHeight;
   var twoPi = Math.PI * 2.0;
+  var bgColour;
+  var fgColour;
 
   function initialize() 
     {
     WatchFace.initialize();
     }
 
+  /* Note that there are two setColours functions, for white on black
+     and black on white. Exactly one must be included, using settings
+     in the .jungle file */
+ 
+  (:bow) function setColours ()
+      {
+      fgColour = Graphics.COLOR_BLACK;
+      bgColour = Graphics.COLOR_WHITE;
+      }
+
+  (:wob) function setColours ()
+      {
+      fgColour = Graphics.COLOR_WHITE;
+      bgColour = Graphics.COLOR_BLACK;
+      }
 
   function onLayout (dc) 
     {
@@ -42,15 +58,30 @@ class BAWFView extends WatchUi.WatchFace
       dndIcon = null;
       }
 
+   setColours();
+
     /* If we can use an off-screen buffer to build the screen display,
        then do. If not, draw direct to the screen. */
 
-    if (Toybox.Graphics has :BufferedBitmap) 
+    /* Buffered bitmap support has changed completely in recent 
+       (Venu-era) devices. This change is poorly documented, and some of
+       the sample applications from the Garmin SDK fail on these devices :/
+       Sigh. So we have to create the offscreen buffer in various different
+       ways. */
+    if (Toybox.Graphics has :createBufferedBitmap) /* Test this first */ 
       {
+      offscreenBuffer = Graphics.createBufferedBitmap({
+                :width=>dc.getWidth(),
+                :height=>dc.getHeight()});
+      offscreenBuffer = offscreenBuffer.get(); // Ugh. Nasty workaround. 
+      }
+    else if (Toybox.Graphics has :BufferedBitmap)  
+      {
+      /* Post-Venu, invoking this constructor fails, even though it seems
+         to exist. Nice one, Garmin :/ */
       offscreenBuffer = new Graphics.BufferedBitmap({
                 :width=>dc.getWidth(),
                 :height=>dc.getHeight()});
-
       } 
     else 
       {
@@ -82,7 +113,7 @@ class BAWFView extends WatchUi.WatchFace
     halfHeight = height / 2;
 
     // Clear screen
-    targetDc.setColor(Graphics.COLOR_WHITE, Graphics.COLOR_BLACK);
+    targetDc.setColor (bgColour, fgColour); 
     targetDc.fillRectangle(0, 0, dc.getWidth(), dc.getHeight());
 
     // Draw do-not-disturb icon, if necessary
@@ -112,9 +143,9 @@ class BAWFView extends WatchUi.WatchFace
       attach to. */
   function drawCentre (dc)
     {
-    dc.setColor (Graphics.COLOR_LT_GRAY, Graphics.COLOR_WHITE);
+    dc.setColor (Graphics.COLOR_LT_GRAY, bgColour);
     dc.fillCircle (halfWidth, halfHeight, 7);
-    dc.setColor (Graphics.COLOR_BLACK,Graphics.COLOR_BLACK);
+    dc.setColor (fgColour, bgColour);
     dc.drawCircle (halfWidth, halfHeight, 7);
     }
 
@@ -122,7 +153,7 @@ class BAWFView extends WatchUi.WatchFace
   /** Draw the numerals aroud the face. */
   function drawNumerals (dc)
     {
-    dc.setColor (Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+    dc.setColor (fgColour, Graphics.COLOR_TRANSPARENT);
     
     var wExtent = width / 2.3; 
     var hExtent = height / 2.3; 
@@ -148,7 +179,7 @@ class BAWFView extends WatchUi.WatchFace
     var dataString = 
       (System.getSystemStats().battery + 0.5).toNumber().toString() + "%";
 
-    dc.setColor(Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+    dc.setColor(fgColour, Graphics.COLOR_TRANSPARENT);
     dc.drawText(x, y, Graphics.FONT_TINY, dataString, 
         Graphics.TEXT_JUSTIFY_CENTER);
     }
@@ -156,7 +187,7 @@ class BAWFView extends WatchUi.WatchFace
 
   function drawHands (dc, clockTime)
     {
-    dc.setColor (Graphics.COLOR_BLACK, Graphics.COLOR_BLACK);
+    dc.setColor (fgColour, bgColour);
     dc.setPenWidth (2);
 
     var hourHandAngle = (((clockTime.hour % 12) * 60) + clockTime.min);
@@ -188,7 +219,7 @@ class BAWFView extends WatchUi.WatchFace
     var dateStr = Lang.format ("$1$ $2$", [info.day_of_week.substring (0, 3), 
       info.day]);
 
-    dc.setColor (Graphics.COLOR_BLACK, Graphics.COLOR_TRANSPARENT);
+    dc.setColor (fgColour, Graphics.COLOR_TRANSPARENT);
     dc.drawText (x, y, Graphics.FONT_TINY, dateStr, 
       Graphics.TEXT_JUSTIFY_CENTER);
     }
@@ -247,7 +278,6 @@ class BAWFView extends WatchUi.WatchFace
     {
     }
   }
-
 
 /** Not used in this application. */
 class BAWFDelegate extends WatchUi.WatchFaceDelegate 

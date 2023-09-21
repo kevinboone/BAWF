@@ -1,6 +1,6 @@
 /*============================================================================
   Battery-saving Analog Watch Face
-  Copyright (c)2018 Kevin Boone
+  Copyright (c)2018-2023 Kevin Boone
   Released under the terms of the GNU Public Licence, v3.0
 ============================================================================*/
 using Toybox.Application;
@@ -16,16 +16,13 @@ class BAWF extends Application.AppBase
     AppBase.initialize();
     }
 
-
   function onStart (state) 
     {
     }
 
-
   function onStop(state)  
     {
     }
- 
 
   function getInitialView() 
     {
