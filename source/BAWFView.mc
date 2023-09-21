@@ -189,24 +189,26 @@ class BAWFView extends WatchUi.WatchFace
     {
     dc.setColor (fgColour, bgColour);
     dc.setPenWidth (2);
+    var w = dc.getWidth();
+    var h = dc.getHeight();
 
     var hourHandAngle = (((clockTime.hour % 12) * 60) + clockTime.min);
     hourHandAngle = hourHandAngle / (12 * 60.0);
     hourHandAngle = hourHandAngle * twoPi;
 
     var points = (generateHandCoordinates (screenCenterPoint, 
-        hourHandAngle, 70, 20, 10));
+        hourHandAngle, 70, 20, 10, w, h));
     drawPolygon (dc, points);
     points = (generateHandCoordinates (screenCenterPoint, 
-        hourHandAngle, 30, 20, 10));
+        hourHandAngle, 30, 20, 10, w, h));
     dc.fillPolygon (points);
 
     var minuteHandAngle = (clockTime.min / 60.0) * twoPi;
     points = generateHandCoordinates (screenCenterPoint, 
-        minuteHandAngle, 92, 10, 8);
+        minuteHandAngle, 92, 10, 8, w, h);
     drawPolygon (dc, points);
     points = generateHandCoordinates (screenCenterPoint, 
-        minuteHandAngle, 30, 10, 8);
+        minuteHandAngle, 30, 10, 8, w, h);
     dc.fillPolygon (points);
     }
 
@@ -239,8 +241,15 @@ class BAWFView extends WatchUi.WatchFace
   /** Work out the vertices of a watch hand of specified length
       and thickness. */
   function generateHandCoordinates (centerPoint, angle, handLength, 
-      tailLength, width) 
+      tailLength, width, dc_width, dc_height) 
     {
+    // Ugh. The nasty scaling here is because I originally calculated
+    //   specific pixel scaling based on a fixed screen size. Rather
+    //   than redo all that, when I moved to supporting multiple screen
+    //   sizes, I just rescaled everthing.
+    handLength = handLength * dc_width / 240;
+    tailLength = tailLength * dc_width / 240;
+    width = width * dc_width / 240;
     var coords = [[-(width / 2), tailLength], [-(width / 2), -handLength], 
         [width / 2, -handLength], [width / 2, tailLength]];
     var result = new [4];
